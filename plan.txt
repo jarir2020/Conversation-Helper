@@ -1,0 +1,16 @@
+I think I made a best choice about saving my thinking power.
+The main idea is:
+
+1. The program will randomly suggest a Topic or a Question which will help me to chat with people online when I feel like I have nothing to talk about.
+
+You can use the reference websites for fetching relevant data:
+
+https://conversationstartersworld.com/topics-to-talk-about/
+https://conversationstartersworld.com/250-conversation-starters/
+
+And Other Pages too!
+
+Especially they also provide a random question generator:
+https://conversationstartersworld.com/random-question-generator/
+
+Suggest Tech Stack and Will the program be a CLI or GUI. and write a final plan.

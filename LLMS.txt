@@ -1,0 +1,33 @@
+# Conversation Helper: LLM Context
+
+## Project purpose
+
+Conversation Helper is a small local-first web app that suggests conversation topics and questions. It also includes a private context notepad for remembering lightweight conversation details, such as interests, past topics, and follow-up ideas.
+
+## Stack
+
+- React and TypeScript
+- Vite
+- Vitest
+- Static JSON data loaded from `public/data/referenceSuggestions.json`
+- Browser `localStorage` for favorites, history, and context notes
+
+## Commands
+
+- `npm install` — install dependencies
+- `npm run dev` — start the development server
+- `npm run build` — run TypeScript checks and create a production build
+- `npm test` — run the test suite
+- `npm run import:references` — refresh the authorized reference-content import
+
+## Important project behavior
+
+- Keep the app usable without a backend or account.
+- Keep context notes local to the browser unless a future feature explicitly changes that boundary.
+- Do not save passwords, addresses, credentials, or other sensitive personal information in context notes.
+- Preserve source IDs, source URLs, revisions, and attribution when changing the imported dataset.
+- Do not commit `node_modules`, `dist`, credentials, or local agent/cloud configuration.
+
+## Change guidance
+
+Read `plan.md` before making substantial changes. Run `npm test` and `npm run build` after implementation changes. For content-import changes, run `npm run import:references` and verify the resulting record counts before building.
