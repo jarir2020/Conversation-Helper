@@ -47,6 +47,7 @@ The referenced sources provide useful structures: categorized topics, hundreds o
    - large suggestion card
    - “New suggestion” button
    - Topic / Question / Surprise selector
+   - Quick search across prompt text, topics, categories, and source notes
    - category and tone filters
    - Copy button
    - Save button
@@ -65,7 +66,7 @@ The referenced sources provide useful structures: categorized topics, hundreds o
 
 8. Add helpful conversation guidance, such as follow-up prompts and a reminder that users can skip questions they dislike.
 9. Add responsive design, keyboard support, accessible labels, and mobile-friendly copy controls.
-10. Add unit tests for random selection, filtering, no-repeat behavior, saved items, and context-note management.
+10. Add unit tests for random selection, filtering, quick search, no-repeat behavior, saved items, and context-note management.
 11. Run production build checks and deploy the static application.
 12. Later enhancements:
 

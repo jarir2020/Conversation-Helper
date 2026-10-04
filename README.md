@@ -5,12 +5,14 @@ Conversation Helper is a local-first web app for the moments when an online conv
 ## Features
 
 - Surprise, topic, and question modes
+- Quick search across the full imported collection, categories, and source notes
 - Category and tone filters
 - No-repeat rounds with previous-suggestion navigation
 - Favorites and recently viewed suggestions stored in the browser
 - Copy a prompt, or copy it together with selected context
 - Context notepad for interests, past topics, and follow-up ideas
 - Imported topic and question collections with source attribution
+- Original Conversation Helper prompts alongside the imported collection
 - Responsive, static, backend-free interface
 
 ## Tech stack
@@ -29,6 +31,32 @@ npm run dev
 ```
 
 Then open the local URL printed by Vite.
+
+## Redeploy to Vercel
+
+If this GitHub repository is connected to the Vercel project, push the tested change to the production branch:
+
+```bash
+npm test
+npm run build
+git add .gitignore README.md plan.md src/App.tsx src/data/questions.ts src/lib/suggestionEngine.ts src/lib/suggestionEngine.test.ts src/styles.css
+git diff --cached --check
+git commit -m "Add topic search and more conversation prompts"
+git push origin main
+```
+
+Vercel should create a deployment for the push and promote it to production when `main` is configured as the production branch. You can follow the build under the project’s Deployments tab.
+
+If the project is not connected to GitHub, deploy from this repository’s root with the Vercel CLI:
+
+```bash
+npm install -g vercel
+vercel login
+vercel link
+vercel --prod
+```
+
+You can also manually redeploy an existing deployment from Vercel Dashboard → Project → Deployments → `…` → Redeploy. Confirm whether to use the existing build cache before starting the redeploy.
 
 ## Verification and import commands
 

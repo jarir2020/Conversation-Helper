@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { referenceDataUrl, suggestions as localSuggestions } from './data/questions'
 import { createContextNote, deleteContextNote, updateContextNote } from './lib/contextNotes'
 import { filterSuggestions, selectRandomSuggestion } from './lib/suggestionEngine'
@@ -41,6 +41,7 @@ function App() {
   const [mode, setMode] = useState<SuggestionMode>('surprise')
   const [category, setCategory] = useState('all')
   const [tone, setTone] = useState<SuggestionTone | 'all'>('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const [current, setCurrent] = useState<Suggestion>(() => localSuggestions[0])
   const [seenIds, setSeenIds] = useState<Set<string>>(() => new Set([localSuggestions[0].id]))
   const [history, setHistory] = useState<Suggestion[]>([])
@@ -50,6 +51,7 @@ function App() {
   const [notes, setNotes] = useState<ContextNote[]>(() => readStorage(STORAGE_KEYS.notes, []))
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
+  const deferredSearchQuery = useDeferredValue(searchQuery)
 
   const allSuggestions = useMemo(
     () => [...localSuggestions, ...referenceSuggestions],
@@ -62,8 +64,8 @@ function App() {
   )
 
   const pool = useMemo(
-    () => filterSuggestions(allSuggestions, { mode, category, tone }),
-    [allSuggestions, mode, category, tone],
+    () => filterSuggestions(allSuggestions, { mode, category, tone, query: deferredSearchQuery }),
+    [allSuggestions, mode, category, tone, deferredSearchQuery],
   )
 
   const selectedNote = notes.find((note) => note.id === selectedNoteId) ?? null
@@ -123,6 +125,7 @@ function App() {
   }
 
   function getNextSuggestion() {
+    if (pool.length === 0) return
     const next = selectRandomSuggestion(pool, seenIds)
     moveTo(next)
   }
@@ -175,6 +178,7 @@ function App() {
   const contextToCopy = selectedNote
     ? `${selectedNote.title}\n${selectedNote.details}\n\nQuestion: ${current.text}`
     : current.text
+  const hasResults = pool.length > 0
 
   return (
     <main className="app-shell">
@@ -219,6 +223,26 @@ function App() {
             ))}
           </div>
 
+          <div className="quick-search">
+            <label className="search-field">
+              <span>Quick search</span>
+              <div className="search-input-wrap">
+                <span className="search-icon" aria-hidden="true">⌕</span>
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Search questions, topics, or ideas"
+                  aria-label="Search questions, topics, or ideas"
+                />
+                {searchQuery && <button type="button" className="clear-search" onClick={() => setSearchQuery('')} aria-label="Clear search">×</button>}
+              </div>
+            </label>
+            <span className="search-result-count">
+              {searchQuery ? `${pool.length.toLocaleString()} match${pool.length === 1 ? '' : 'es'}` : 'Search the full collection'}
+            </span>
+          </div>
+
           <div className="filter-row">
             <label>
               <span>Explore</span>
@@ -237,37 +261,49 @@ function App() {
             <span className="round-label"><span className="round-dot" /> No repeats this round</span>
           </div>
 
-          <article className="suggestion-card">
-            <div className="card-topline">
-              <span className="category-pill">{current.category}</span>
-              <button className={`favorite-button ${isFavorite ? 'saved' : ''}`} onClick={toggleFavorite} aria-label={isFavorite ? 'Remove from favorites' : 'Save to favorites'}>
-                {isFavorite ? '♥ Saved' : '♡ Save'}
-              </button>
-            </div>
-            <div className="suggestion-content">
-              <span className="suggestion-kind">{current.kind === 'topic' ? 'TOPIC TO EXPLORE' : 'QUESTION TO ASK'}</span>
-              <h2>{current.text}</h2>
-              <div className="follow-up">
-                <span className="follow-icon">↳</span>
-                <div><strong>{current.sourceId ? 'Notes from the source' : 'A natural follow-up'}</strong><p>{current.followUp || 'Let the answer guide your next question.'}</p></div>
+          <article className={`suggestion-card ${hasResults ? '' : 'no-results'}`}>
+            {hasResults ? (
+              <>
+                <div className="card-topline">
+                  <span className="category-pill">{current.category}</span>
+                  <button className={`favorite-button ${isFavorite ? 'saved' : ''}`} onClick={toggleFavorite} aria-label={isFavorite ? 'Remove from favorites' : 'Save to favorites'}>
+                    {isFavorite ? '♥ Saved' : '♡ Save'}
+                  </button>
+                </div>
+                <div className="suggestion-content">
+                  <span className="suggestion-kind">{current.kind === 'topic' ? 'TOPIC TO EXPLORE' : 'QUESTION TO ASK'}</span>
+                  <h2>{current.text}</h2>
+                  <div className="follow-up">
+                    <span className="follow-icon">↳</span>
+                    <div><strong>{current.sourceId ? 'Notes from the source' : 'A natural follow-up'}</strong><p>{current.followUp || 'Let the answer guide your next question.'}</p></div>
+                  </div>
+                  {current.answer && (
+                    <details className="answer-details">
+                      <summary>Reveal imported answer</summary>
+                      <p>{current.answer}</p>
+                    </details>
+                  )}
+                </div>
+                <div className="card-footer">
+                  <span className={`level level-${current.level}`}>{current.level} conversation</span>
+                  <a href={current.sourceUrl} target="_blank" rel="noreferrer">{current.sourceLabel} ↗</a>
+                </div>
+              </>
+            ) : (
+              <div className="empty-suggestion">
+                <span className="empty-suggestion-mark">⌕</span>
+                <span className="suggestion-kind">NO MATCHES YET</span>
+                <h2>Try a broader search.</h2>
+                <p>Search for a shorter keyword, or clear the search to explore the full collection.</p>
+                <button className="empty-clear-button" onClick={() => { setSearchQuery(''); setCategory('all'); setTone('all') }}>Clear filters</button>
               </div>
-              {current.answer && (
-                <details className="answer-details">
-                  <summary>Reveal imported answer</summary>
-                  <p>{current.answer}</p>
-                </details>
-              )}
-            </div>
-            <div className="card-footer">
-              <span className={`level level-${current.level}`}>{current.level} conversation</span>
-              <a href={current.sourceUrl} target="_blank" rel="noreferrer">{current.sourceLabel} ↗</a>
-            </div>
+            )}
           </article>
 
           <div className="action-row">
             <button className="secondary-button" onClick={showPrevious} disabled={history.length === 0}>← Previous</button>
-            <button className="primary-button" onClick={getNextSuggestion}>New suggestion <span>↗</span></button>
-            <button className="secondary-button" onClick={() => copyText(contextToCopy, selectedNote ? 'Context and prompt copied' : 'Prompt copied')}>Copy <span>⌘</span></button>
+            <button className="primary-button" onClick={getNextSuggestion} disabled={!hasResults}>New suggestion <span>↗</span></button>
+            <button className="secondary-button" onClick={() => copyText(contextToCopy, selectedNote ? 'Context and prompt copied' : 'Prompt copied')} disabled={!hasResults}>Copy <span>⌘</span></button>
           </div>
 
           <div className="tip-line"><span>✦</span> You do not have to use every question. Keep the ones that feel natural.</div>

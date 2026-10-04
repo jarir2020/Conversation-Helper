@@ -25,6 +25,18 @@ describe('filterSuggestions', () => {
 
     expect(new Set(result.map((item) => item.kind))).toEqual(new Set(['topic', 'question']))
   })
+
+  it('searches across prompt text, categories, and notes', () => {
+    const result = filterSuggestions(suggestions, {
+      mode: 'surprise',
+      category: 'all',
+      tone: 'all',
+      query: 'perfect weekend',
+    })
+
+    expect(result).toHaveLength(1)
+    expect(result[0].id).toBe('local-perfect-weekend')
+  })
 })
 
 describe('selectRandomSuggestion', () => {
